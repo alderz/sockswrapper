@@ -1,0 +1,3 @@
+Sockswrapper is a HTTP proxy that sends all the traffic through a SOCKS proxy.
+
+your computer -> sockswrapper (HTTP proxy) -> SOCKS proxy -> internet
