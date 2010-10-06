@@ -1,4 +1,7 @@
-Sockswrapper is a HTTP proxy that sends all the traffic through a SOCKS proxy.
+Sockswrapper is a HTTP proxy, written in python, that sends all the traffic
+through a SOCKS proxy.
+
+YOU NEED socksipy TO RUN THIS.
 
 your computer -> sockswrapper (HTTP proxy) -> SOCKS proxy -> internet
 
