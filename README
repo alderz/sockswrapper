@@ -1,3 +1,8 @@
 Sockswrapper is a HTTP proxy that sends all the traffic through a SOCKS proxy.
 
 your computer -> sockswrapper (HTTP proxy) -> SOCKS proxy -> internet
+
+Usage: ./sockswrapper.py socks_hosts socks_port [port [allowed_client name ...]]
+
+Use example:
+./sockswrapper.py localhost 4711 8080
