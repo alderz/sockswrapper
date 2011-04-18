@@ -31,7 +31,7 @@ class ProxyHandler (BaseHTTPServer.BaseHTTPRequestHandler):
     __base = BaseHTTPServer.BaseHTTPRequestHandler
     __base_handle = __base.handle
 
-    server_version = "TinyHTTPProxy/" + __version__
+    server_version = "sockswrapper/" + __version__
     rbufsize = 0                        # self.rfile Be unbuffered
 
     def handle(self):
@@ -58,7 +58,6 @@ class ProxyHandler (BaseHTTPServer.BaseHTTPRequestHandler):
         return 1
 
     def do_CONNECT(self):
-        #soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         soc = socks.socksocket()
         soc.setproxy(socks.PROXY_TYPE_SOCKS5, self.socks_host, port=self.socks_port)
         try:
@@ -70,7 +69,6 @@ class ProxyHandler (BaseHTTPServer.BaseHTTPRequestHandler):
                 self.wfile.write("\r\n")
                 self._read_write(soc, 300)
         finally:
-            #print "\t" "bye"
             soc.close()
             self.connection.close()
 
@@ -80,9 +78,8 @@ class ProxyHandler (BaseHTTPServer.BaseHTTPRequestHandler):
         if scm != 'http' or fragment or not netloc:
             self.send_error(400, "bad url %s" % self.path)
             return
-        #soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         soc = socks.socksocket()
-        soc.setproxy(socks.PROXY_TYPE_SOCKS5, "localhost", port=4711)
+        soc.setproxy(socks.PROXY_TYPE_SOCKS5, self.socks_host, port=self.socks_port)
         try:
             if self._connect_to(netloc, soc):
                 self.log_request()
@@ -136,18 +133,18 @@ if __name__ == '__main__':
         opts, args = getopt.gnu_getopt(sys.argv[1:], "h", ["help"])
     except getopt.GetoptError, err:
         print str(err)
-        print sys.argv[0], "socks_hosts socks_port [port [allowed_client_name ...]]"
+        print sys.argv[0], "socks_host socks_port [port [allowed_client_name ...]]"
         sys.exit(2)
 
     for o, a in opts:
         if o in ("-h", "--help"):
-            print sys.argv[0], "socks_hosts socks_port [port [allowed_client_name ...]]"
+            print sys.argv[0], "socks_host socks_port [port [allowed_client_name ...]]"
             sys.exit()
         else:
             assert False, "unhandled option"
 
     if len(args) < 2:
-        print sys.argv[0], "socks_hosts socks_port [port [allowed_client_name ...]]"
+        print sys.argv[0], "socks_host socks_port [port [allowed_client_name ...]]"
         sys.exit()
 
     ProxyHandler.socks_host = args[0]
