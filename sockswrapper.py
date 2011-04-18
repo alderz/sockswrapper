@@ -23,7 +23,12 @@ Socks part by: Ángel Alonso.
 
 __version__ = "0.3"
 
-import BaseHTTPServer, select, socket, SocketServer, urlparse, socks
+import BaseHTTPServer
+import select
+import socket
+import SocketServer
+import urlparse 
+import socks
 import sys
 import getopt
 
