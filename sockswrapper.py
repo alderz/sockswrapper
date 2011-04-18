@@ -99,7 +99,6 @@ class ProxyHandler (BaseHTTPServer.BaseHTTPRequestHandler):
                 soc.send("\r\n")
                 self._read_write(soc)
         finally:
-            print "\t" "bye"
             soc.close()
             self.connection.close()
 
@@ -127,8 +126,8 @@ class ProxyHandler (BaseHTTPServer.BaseHTTPRequestHandler):
 
     do_HEAD = do_GET
     do_POST = do_GET
-    do_PUT  = do_GET
-    do_DELETE=do_GET
+    do_PUT = do_GET
+    do_DELETE = do_GET
 
 class ThreadingHTTPServer (SocketServer.ThreadingMixIn,
                            BaseHTTPServer.HTTPServer): pass
@@ -166,7 +165,7 @@ if __name__ == '__main__':
         ProxyHandler.allowed_clients = allowed
         del args[2:]
     else:
-        print "Any clients will be served..."
+        print "[+] Any clients will be served..."
 
     ProxyHandler.protocol_version = "HTTP/1.0"
     httpd = ThreadingHTTPServer(('', port), ProxyHandler)
