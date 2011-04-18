@@ -1,7 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
-
-__doc__ = """Sockswrapper
+"""Sockswrapper
 
 Sockswrapper is a HTTP proxy that sends all the traffic through
 a SOCKS proxy.
@@ -18,7 +17,7 @@ tested yet.
 Any help will be greatly appreciated.
 
 Original autor: SUZUKI Hisao.
-Socks part by: Ángel Alonso.
+Maintainer: Ángel Alonso.
 """
 
 __version__ = "0.3"
@@ -27,44 +26,53 @@ import BaseHTTPServer
 import select
 import socket
 import SocketServer
-import urlparse 
+import urlparse
 import socks
 import sys
 import getopt
 
+
 class ProxyHandler (BaseHTTPServer.BaseHTTPRequestHandler):
+    """ Handles the requests of the proxy """
+
     __base = BaseHTTPServer.BaseHTTPRequestHandler
     __base_handle = __base.handle
 
     server_version = "sockswrapper/" + __version__
-    rbufsize = 0                        # self.rfile Be unbuffered
+    rbufsize = 0   # self.rfile Be unbuffered
 
     def handle(self):
-        (ip, port) =  self.client_address
-        if hasattr(self, 'allowed_clients') and ip not in self.allowed_clients:
+        (client_ip, _port) = self.client_address
+        if hasattr(self,
+                'allowed_clients') and client_ip not in self.allowed_clients:
             self.raw_requestline = self.rfile.readline()
-            if self.parse_request(): self.send_error(403)
+            if self.parse_request():
+                self.send_error(403)
         else:
             self.__base_handle()
 
     def _connect_to(self, netloc, soc):
         i = netloc.find(':')
         if i >= 0:
-            host_port = netloc[:i], int(netloc[i+1:])
+            host_port = netloc[:i], int(netloc[i + 1:])
         else:
             host_port = netloc, 80
-        print "\t" "connect to %s:%d" % host_port
-        try: soc.connect(host_port)
+        print "\tconnect to %s:%d" % host_port
+        try:
+            soc.connect(host_port)
         except socket.error, arg:
-            try: msg = arg[1]
-            except: msg = arg
+            try:
+                msg = arg[1]
+            except TypeError:
+                msg = arg
             self.send_error(404, msg)
             return 0
         return 1
 
     def do_CONNECT(self):
         soc = socks.socksocket()
-        soc.setproxy(socks.PROXY_TYPE_SOCKS5, self.socks_host, port=self.socks_port)
+        soc.setproxy(socks.PROXY_TYPE_SOCKS5, self.socks_host,
+                port=self.socks_port)
         try:
             if self._connect_to(self.path, soc):
                 self.log_request(200)
@@ -84,7 +92,8 @@ class ProxyHandler (BaseHTTPServer.BaseHTTPRequestHandler):
             self.send_error(400, "bad url %s" % self.path)
             return
         soc = socks.socksocket()
-        soc.setproxy(socks.PROXY_TYPE_SOCKS5, self.socks_host, port=self.socks_port)
+        soc.setproxy(socks.PROXY_TYPE_SOCKS5, self.socks_host,
+                port=self.socks_port)
         try:
             if self._connect_to(netloc, soc):
                 self.log_request()
@@ -109,7 +118,8 @@ class ProxyHandler (BaseHTTPServer.BaseHTTPRequestHandler):
         while 1:
             count += 1
             (ins, _, exs) = select.select(iw, ow, iw, 3)
-            if exs: break
+            if exs:
+                break
             if ins:
                 for i in ins:
                     if i is soc:
@@ -122,34 +132,40 @@ class ProxyHandler (BaseHTTPServer.BaseHTTPRequestHandler):
                         count = 0
             else:
                 print "\t" "idle", count
-            if count == max_idling: break
+            if count == max_idling:
+                break
 
     do_HEAD = do_GET
     do_POST = do_GET
     do_PUT = do_GET
     do_DELETE = do_GET
 
+
 class ThreadingHTTPServer (SocketServer.ThreadingMixIn,
-                           BaseHTTPServer.HTTPServer): pass
+                           BaseHTTPServer.HTTPServer):
+    pass
+
+
+def print_usage(code=0):
+    print sys.argv[0], "socks_host socks_port \
+[port [allowed_client_name ...]]"
+    sys.exit(code)
 
 if __name__ == '__main__':
     try:
         opts, args = getopt.gnu_getopt(sys.argv[1:], "h", ["help"])
     except getopt.GetoptError, err:
         print str(err)
-        print sys.argv[0], "socks_host socks_port [port [allowed_client_name ...]]"
-        sys.exit(2)
+        print_usage(2)
 
     for o, a in opts:
         if o in ("-h", "--help"):
-            print sys.argv[0], "socks_host socks_port [port [allowed_client_name ...]]"
-            sys.exit()
+            print_usage(2)
         else:
             assert False, "unhandled option"
 
     if len(args) < 2:
-        print sys.argv[0], "socks_host socks_port [port [allowed_client_name ...]]"
-        sys.exit()
+        print_usage(2)
 
     ProxyHandler.socks_host = args[0]
     ProxyHandler.socks_port = int(args[1])
